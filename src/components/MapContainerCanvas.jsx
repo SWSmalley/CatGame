@@ -2,9 +2,10 @@ import React from 'react'
 import MapTile from './MapTile'
 //import Player from "./Player"
 
-export default function MapContainerCanvas({tileMap,validMoves,setPlayerPos,playerPos}) {
+export default function MapContainerCanvas({tileMap,validMoves,turnOver}) {
+
 ///valid moves is a list of dictionaries containing xy coords
-    
+    console.log(validMoves, " = valid moves")
     let tileDict = {
         0 : "desertSand",
         1 : "desertRock",
@@ -18,7 +19,7 @@ export default function MapContainerCanvas({tileMap,validMoves,setPlayerPos,play
       for(let i = 0; i<validMoves.length;i++){
         if (validMoves[i].x === x && validMoves[i].y ===y){
           //console.log("valid move found")
-          tileToPush = ( <MapTile key = {(x*10)+y} variant={tileDict[tileMap[y][x]]} onclick ={() => {setPlayerPos(validMoves[i]); console.log(validMoves[i])}} className={"animate-pulse"}/>)
+          tileToPush = ( <MapTile key = {(x*10)+y} variant={tileDict[tileMap[y][x]]} onclick ={() => {turnOver(validMoves[i]); console.log(validMoves[i])}} className={"animate-pulse"}/>)
            break}
         else{
           console.log("pushing default")
