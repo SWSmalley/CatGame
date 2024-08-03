@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import MapContainerCanvas from './components/MapContainerCanvas'
 //import EntitiesContainerCanvas from './components/EntitiesContainerCanvas'
 import Agent from './components/Agent'
-import DeathScreen from './components/DeathScreen'
+import GameOverScreen from './components/GameOverScreen'
 import ScoreBoard from './components/ScoreBoard'
 import Collectible from './components/collectible'
 
@@ -14,8 +14,8 @@ import Collectible from './components/collectible'
 
 export default function App() {
   let tileMap = 
-  [   [1,0,0,0,1,0],
-      [0,0,1,0,0,0],
+  [   [1,0,0,0,0,0],
+      [0,0,1,0,1,0],
       [0,1,1,0,1,0],
       [0,0,0,0,0,0],
       [1,1,0,1,1,0],
@@ -150,7 +150,8 @@ console.log(agentList, " = agent list")
     
     {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
     {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
-    {!entityDict.playerCat.alive ? <DeathScreen/> :<></>}
+    {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"}/> :<></>}
+    {collectibleList.length < 1 ? <GameOverScreen variant = {"win"}/> :<></>}
     </div>
     </>
   )

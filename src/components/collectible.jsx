@@ -14,8 +14,8 @@ export default function ({variant,posInitial,className}) {
        transform: `translate(${posInitial.x}00%, ${posInitial.y}00%)`,
        "movementTransition" : "transform"   }
 
-       /// very annoyingly if we just stick animate-bounce or something in the class or this style decleration
-       /// it breaks - the transform is not applied to the animation. errrrrgh. i think key frames might be how you have to do it.
+       /// very annoyingly if we just stick animate-bounce or something in the class or this style decleration it breaks
+       ///  - the transform is not applied to the animation. errrrrgh. i think key frames might be how you have to do it.
     return (
         <img src = {variants[variant].sprite} style={transformStyle} className={`  z-10  pixelated w-1/6 pointer-events-none absolute ${className}`}/>
       )
