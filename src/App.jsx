@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import MapContainerCanvas from './components/MapContainerCanvas'
 //import EntitiesContainerCanvas from './components/EntitiesContainerCanvas'
-import Player from "./components/Player"
-import Enemy from './components/Enemy'
+import Agent from './components/Agent'
+import DeathScreen from './components/DeathScreen'
 
 /// actually i think the structure is going to be a map container that holds the tiles,
 /// and similarly an entity container that holds player tiles, enemies objects and importantly blank tiles.
@@ -32,23 +32,31 @@ export default function App() {
       "pos" : {"x" : 1, "y" : 0 },
       "posInitial" : {"x" : 1, "y" : 0 },
       "previousPos":{"x" : 1, "y" : 0 },
-      "possibleMoves": []
+      "possibleMoves": [],
+      "alive" : true
     },
     "cat1": {
       "type": "enemy",
       "pos" : {"x": 2, "y":3},
       "posInitial" : {"x" : 2, "y" : 3 },
       "previousPos": {"x": 2, "y":3},
-      "possibleMoves": []
+      "possibleMoves": [],
+      "alive" : true
     } ,
     "cat2": {
       "type": "enemy",
       "pos" : {"x": 4, "y":1},
       "posInitial" : {"x" : 4, "y" : 1 },
       "previousPos": {"x": 4, "y":1},
-      "possibleMoves": []
+      "possibleMoves": [],
+      "alive" : true
     } 
   })
+function checkIfEnemyTouching(playerPos){
+  for(let key in entityList){if (entityList[key].type == "enemy" && entityList[key].pos.x == playerPos.x && entityList[key].pos.y == playerPos.y){entityList.playerCat.alive = false}}
+}
+
+
 function findPossibleMoves(entityPos){
   let neighbours = []
   if(entityPos["x"]-1 >= 0){// is there a tile to the left 
@@ -81,9 +89,8 @@ function selectMoveForAi(enemy){
   else{return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
   }
 
-function playerTakesTurn(nextPlayerPos){
-  
-
+function playerTakesTurn(nextPlayerPos){  
+  checkIfEnemyTouching(nextPlayerPos)
   let tempEntityList = structuredClone(entityList)
   console.log("tempList = ", tempEntityList)
   tempEntityList.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
@@ -97,7 +104,7 @@ function playerTakesTurn(nextPlayerPos){
     console.log(tempEntityList[key], "enemy updated")
   }
 ////////////here the Ai needs to pick a new position of the possible
-  
+  checkIfEnemyTouching(nextPlayerPos) //  called twice to handle us moving into them or arriving at the same tile as them
   setEntityList(tempEntityList)
 }
 
@@ -108,12 +115,13 @@ useEffect(() =>{  playerTakesTurn(entityList.playerCat.posInitial)} ,[]) //runs 
 
 
   return (
-    <div className='w-3/4 md:w-2/5 m-auto relative'>
+    <div className='w-3/4 md:w-2/5 m-auto relative mt-5'>
     <MapContainerCanvas tileMap={tileMap} validMoves = {entityList.playerCat.possibleMoves} turnOver={playerTakesTurn} />
-    {/*<EntitiesContainerCanvas tileMap={tileMap} playerCoord={{"x" : 1, "y" : 0 }} />*/}
-    <Player  playerPos = {entityList.playerCat.pos} playerPosInitial = {entityList.playerCat.posInitial} className={`z-10 absolute pixelated w-1/6 `}/>
-    <Enemy pos = {entityList.cat1.pos} posInitial = {entityList.cat1.posInitial} className={`z-10 absolute pixelated w-1/6 `}/>
-    <Enemy pos = {entityList.cat2.pos} posInitial = {entityList.cat2.posInitial} className={`z-10 absolute pixelated w-1/6 `}/>
+    {/*converting the values of our entityList dict to a list so we can map it to generate the player / enemy agents. */}
+    
+    {Object.values(entityList).map((entity) =>{return(<Agent pos = {entity.pos} posInitial = {entity.posInitial} variant = {entity.type} />)} )}
+
+    {!entityList.playerCat.alive ? <DeathScreen/> :<></>}
     </div>
   )
 }
