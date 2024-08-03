@@ -3,6 +3,8 @@ import MapContainerCanvas from './components/MapContainerCanvas'
 //import EntitiesContainerCanvas from './components/EntitiesContainerCanvas'
 import Agent from './components/Agent'
 import DeathScreen from './components/DeathScreen'
+import ScoreBoard from './components/ScoreBoard'
+import Collectible from './components/collectible'
 
 /// actually i think the structure is going to be a map container that holds the tiles,
 /// and similarly an entity container that holds player tiles, enemies objects and importantly blank tiles.
@@ -23,9 +25,9 @@ export default function App() {
   //const [turn,setTurn] = useState()
   //const animationSpeed = 250
   const enemyRandomness = 0.15
+const [score,setScore] = useState(0)
 
-
-  const [entityList,setEntityList] = useState({
+  const [entityDict,setentityDict] = useState({
     "playerCat": {
       
       "type": "player",
@@ -50,13 +52,38 @@ export default function App() {
       "previousPos": {"x": 4, "y":1},
       "possibleMoves": [],
       "alive" : true
-    } 
+    },
+    "fish1":{
+      "type": "collectible",
+      "pos" : {"x": 5, "y":0},
+      "alive" : true,
+      "value" : 100
+    },
+    "fish2":{
+      "type": "collectible",
+      "pos" : {"x": 4, "y":5},
+      "alive" : true,
+      "value" : 100
+    },
+    "fish3":{
+      "type": "collectible",
+      "pos" : {"x": 0, "y":5},
+      "alive" : true,
+      "value" : 100
+    }
+    
   })
-function checkIfEnemyTouching(playerPos){
-  for(let key in entityList){if (entityList[key].type == "enemy" && entityList[key].pos.x == playerPos.x && entityList[key].pos.y == playerPos.y){entityList.playerCat.alive = false}}
-}
-
-
+function checkIfEntityTouching(playerPos,tempEntityDict){
+  let newscore = score
+  for(let key in tempEntityDict)
+    //if the player shares a position with an enemy, kill the player
+    {if (tempEntityDict[key].type == "enemy" && tempEntityDict[key].pos.x == playerPos.x && tempEntityDict[key].pos.y == playerPos.y){tempEntityDict.playerCat.alive = false}
+    // this line checks if we landed on an alive collectible and if so "kills" the collectible so it wont render anymore. it adds the value to the tempscore var... which we update at the end.
+    else if(tempEntityDict[key].type == "collectible" && tempEntityDict[key].pos.x == playerPos.x && tempEntityDict[key].pos.y == playerPos.y && tempEntityDict[key].alive == true){ newscore = newscore+tempEntityDict[key].value; tempEntityDict[key].alive = false; console.log("entity killed")}}
+    console.log(newscore)
+    setScore(newscore) // update here incase for some reason we have multiple point values earned to save on rerenders.
+    return(tempEntityDict)
+  }
 function findPossibleMoves(entityPos){
   let neighbours = []
   if(entityPos["x"]-1 >= 0){// is there a tile to the left 
@@ -74,7 +101,7 @@ function findPossibleMoves(entityPos){
   return (neighbours.filter((tileCoords)=>{return(tileMap[tileCoords.y][tileCoords.x]<1)}))// checks if the tilemap value is < 1 and therefore navigable
 }
 function checkIfPossible(possibleMoves,movementToCheck){
-  for(let move of possibleMoves){ if(move.x == movementToCheck.x && move.y == movementToCheck.y){console.log("match found");return true}}
+  for(let move of possibleMoves){ if(move.x == movementToCheck.x && move.y == movementToCheck.y){return true}}
 }
 
 function selectMoveForAi(enemy){
@@ -82,46 +109,49 @@ function selectMoveForAi(enemy){
   if(Math.random()<enemyRandomness){return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
   // this is a very ugly way but i cant think of something more elegant....
   /// we check which direction the enemy moved last AND can it be continued.. if so do it. if not go random.
-  if (enemy.previousPos.x - enemy.pos.x >0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x - 1,"y" : enemy.pos.y}) ){console.log("enemy moving left"); return({"x" : enemy.pos.x - 1,"y" : enemy.pos.y})}
-  else if (enemy.previousPos.x - enemy.pos.x <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x + 1,"y" : enemy.pos.y}) ){console.log("enemy moving right"); return({"x" : enemy.pos.x + 1,"y" : enemy.pos.y})}
-  else if (enemy.previousPos.y - enemy.pos.y >0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y - 1}) ){console.log("enemy moving up"); return({"x" : enemy.pos.x,"y" : enemy.pos.y  - 1})}
-  else if (enemy.previousPos.y - enemy.pos.y <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y + 1}) ){console.log("enemy moving down"); return({"x" : enemy.pos.x,"y" : enemy.pos.y + 1})}
+  if (enemy.previousPos.x - enemy.pos.x >0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x - 1,"y" : enemy.pos.y}) ){ return({"x" : enemy.pos.x - 1,"y" : enemy.pos.y})}
+  else if (enemy.previousPos.x - enemy.pos.x <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x + 1,"y" : enemy.pos.y}) ){ return({"x" : enemy.pos.x + 1,"y" : enemy.pos.y})}
+  else if (enemy.previousPos.y - enemy.pos.y >0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y - 1}) ){ return({"x" : enemy.pos.x,"y" : enemy.pos.y  - 1})}
+  else if (enemy.previousPos.y - enemy.pos.y <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y + 1}) ){ return({"x" : enemy.pos.x,"y" : enemy.pos.y + 1})}
   else{return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
   }
 
 function playerTakesTurn(nextPlayerPos){  
-  checkIfEnemyTouching(nextPlayerPos)
-  let tempEntityList = structuredClone(entityList)
-  console.log("tempList = ", tempEntityList)
-  tempEntityList.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
   
-  for( let key in tempEntityList){ // calculate moves for all entities for their new positions
-    tempEntityList[key].possibleMoves = findPossibleMoves(tempEntityList[key].pos)
-    if (tempEntityList[key].type == "enemy"){ // if its an enemy we store its previous location and then make its move to one of its options
-      let oldPos = tempEntityList[key].pos
-      tempEntityList[key].pos = selectMoveForAi(tempEntityList[key])
-      tempEntityList[key].previousPos = oldPos}
-    console.log(tempEntityList[key], "enemy updated")
+  let tempEntityDict = structuredClone(entityDict)
+  tempEntityDict = checkIfEntityTouching(nextPlayerPos,tempEntityDict)
+  tempEntityDict.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
+  
+  for( let key in tempEntityDict){ // calculate moves for all entities for their new positions
+    tempEntityDict[key].possibleMoves = findPossibleMoves(tempEntityDict[key].pos)
+    if (tempEntityDict[key].type == "enemy"){ // if its an enemy we store its previous location and then make its move to one of its options
+      let oldPos = tempEntityDict[key].pos
+      tempEntityDict[key].pos = selectMoveForAi(tempEntityDict[key])
+      tempEntityDict[key].previousPos = oldPos}
   }
 ////////////here the Ai needs to pick a new position of the possible
-  checkIfEnemyTouching(nextPlayerPos) //  called twice to handle us moving into them or arriving at the same tile as them
-  setEntityList(tempEntityList)
+  tempEntityDict = checkIfEntityTouching(nextPlayerPos, tempEntityDict) //  called twice to handle us moving into them or arriving at the same tile as them
+  setentityDict(tempEntityDict)
 }
 
-useEffect(() =>{  playerTakesTurn(entityList.playerCat.posInitial)} ,[]) //runs the turn script once at run time.
+useEffect(() =>{  playerTakesTurn(entityDict.playerCat.posInitial)} ,[]) //runs the turn script once at run time.
   
 
 /// enemy cats have a startingPos, CurrentPos a way of recording the direction they continue in, maybe a valid moves list.
-
-
+let collectibleList = Object.values(entityDict).filter((entity) =>{return entity.type == "collectible" && entity.alive == true})
+let agentList = Object.values(entityDict).filter((entity) =>{return entity.type == "enemy" || entity.type == "player" })
+console.log(agentList, " = agent list")
   return (
-    <div className='w-3/4 md:w-2/5 m-auto relative mt-5'>
-    <MapContainerCanvas tileMap={tileMap} validMoves = {entityList.playerCat.possibleMoves} turnOver={playerTakesTurn} />
-    {/*converting the values of our entityList dict to a list so we can map it to generate the player / enemy agents. */}
+    <>
+    <ScoreBoard score = {score}/>
+    <div className='w-3/4 aspect-square md:w-2/5 m-auto relative mt-5 border-black border-8'>
+    <MapContainerCanvas tileMap={tileMap} validMoves = {entityDict.playerCat.possibleMoves} turnOver={playerTakesTurn} />
+    {/*converting the values of our entityDict dict to a list so we can map it to generate the player / enemy agents. */}
     
-    {Object.values(entityList).map((entity) =>{return(<Agent pos = {entity.pos} posInitial = {entity.posInitial} variant = {entity.type} />)} )}
-
-    {!entityList.playerCat.alive ? <DeathScreen/> :<></>}
+    {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
+    {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
+    {!entityDict.playerCat.alive ? <DeathScreen/> :<></>}
     </div>
+    </>
   )
 }

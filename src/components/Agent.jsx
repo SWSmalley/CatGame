@@ -26,9 +26,8 @@ export default function Agent({variant,posInitial,pos,className}) {
         transition: variants[variant].movementTransition
       };
 
-      console.log(variants[variant].sprite,)
 
   return (
-    <img src = {variants[variant].sprite} style = {transformStyle} className={` z-10 absolute pixelated w-1/6 pointer-events-none ${className}`}/>
+    <img src = {variants[variant].sprite} style = {transformStyle} className={` z-20 absolute pixelated w-1/6 pointer-events-none ${className}`}/>
   )
 }
