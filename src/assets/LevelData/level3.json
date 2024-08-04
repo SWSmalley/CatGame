@@ -35,7 +35,7 @@
         },
         "fish1":{
           "type": "collectible",
-          "pos" : {"x": 5, "y":0},
+          "pos" : {"x": 4, "y":1},
           "alive" : true,
           "value" : 100
         },
