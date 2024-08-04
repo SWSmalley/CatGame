@@ -1,0 +1,56 @@
+{
+    "tileMap" :
+    [   [1,0,0,0,0,0],
+        [0,0,6,0,1,0],
+        [0,6,6,0,1,0],
+        [0,0,0,0,0,0],
+        [1,1,0,6,6,0],
+        [0,0,0,6,0,0]
+    ],
+    "entitiesDict" : {
+        "playerCat": {
+          
+          "type": "player",
+          "pos" : {"x" : 1, "y" : 0 },
+          "posInitial" : {"x" : 1, "y" : 0 },
+          "previousPos":{"x" : 1, "y" : 0 },
+          "possibleMoves": [],
+          "alive" : true
+        },
+        "cat1": {
+          "type": "enemy",
+          "pos" : {"x": 2, "y":3},
+          "posInitial" : {"x" : 2, "y" : 3 },
+          "previousPos": {"x": 2, "y":3},
+          "possibleMoves": [],
+          "alive" : true
+        } ,
+        "cat2": {
+          "type": "enemy",
+          "pos" : {"x": 5, "y":1},
+          "posInitial" : {"x" : 5, "y" : 1 },
+          "previousPos": {"x": 5, "y":1},
+          "possibleMoves": [],
+          "alive" : true
+        },
+        "fish1":{
+          "type": "collectible",
+          "pos" : {"x": 5, "y":0},
+          "alive" : true,
+          "value" : 100
+        },
+        "fish2":{
+          "type": "collectible",
+          "pos" : {"x": 4, "y":5},
+          "alive" : true,
+          "value" : 100
+        },
+        "fish3":{
+          "type": "collectible",
+          "pos" : {"x": 0, "y":5},
+          "alive" : true,
+          "value" : 100
+        }
+        
+      }
+}

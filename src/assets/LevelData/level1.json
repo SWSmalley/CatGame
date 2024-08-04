@@ -1,0 +1,45 @@
+{
+    "tileMap" :
+    [
+    [4,5,5,-2,4,4],
+    [-2,-2,5,-2,-2,-2],
+    [-2,5,5,-2,5,-2],
+    [-2,-2,-2,-2,-2,-2],
+    [4,4,-2,5,5,4],
+    [5,4,-2,-2,4,4]
+    ],
+    "entitiesDict" : {
+        "playerCat": {
+          
+          "type": "player",
+          "pos" : {"x" : 3, "y" : 0},
+          "posInitial" : {"x" : 3, "y" : 0 },
+          "previousPos":{"x" : 3, "y" : 0 },
+          "possibleMoves": [],
+          "alive" : true
+        },
+        "cat1": {
+          "type": "enemy",
+          "pos" : {"x": 2, "y":3},
+          "posInitial" : {"x" : 2, "y" : 3 },
+          "previousPos": {"x": 2, "y":3},
+          "possibleMoves": [],
+          "alive" : true
+        },
+
+        "fish1":{
+          "type": "collectible",
+          "pos" : {"x": 1, "y":1},
+          "alive" : true,
+          "value" : 100
+        },
+        "fish2":{
+          "type": "collectible",
+          "pos" : {"x": 3, "y":5},
+          "alive" : true,
+          "value" : 100
+        }
+
+        
+      }
+}

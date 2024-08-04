@@ -2,13 +2,32 @@ import React from 'react'
 import MapTile from './MapTile'
 //import Player from "./Player"
 
+
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+/////currently the tilemaps are broken for new levels
+///// this is because on newlevel / level reset we dont
+///// currently  recalculate valid moves for the player
+///// need to identify a way of triggering that without it
+//// getting even more messy
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+
 export default function MapContainerCanvas({tileMap,validMoves,turnOver}) {
+  console.log({tileMap}, " = tilemap received by canvas valid moves = ", validMoves )
 
 ///valid moves is a list of dictionaries containing xy coords
 
     let tileDict = {
-        0 : "desertSand",
-        1 : "desertRock",
+        "-2": "grassGrass",
+        "-1": "dirtDirt",
+        "0" : "desertSand",
+        "1" : "desertRock",
+        "2" : "dirtWater",
+        "3" : "dirtRocks",
+        "4" : "grassBush",
+        "5" : "grassTall",
+        "6" : "desertPlant"
     }
     let maptiles = []
  /// this assembles the tile map and assigns clickable properties to the tiles that are valid moves for the player.
@@ -25,6 +44,7 @@ export default function MapContainerCanvas({tileMap,validMoves,turnOver}) {
         }
         
       }
+      console.log("pushing this tile: ", tileToPush, " taken from tilemap : ",tileMap)
       maptiles.push(tileToPush)
     }
 

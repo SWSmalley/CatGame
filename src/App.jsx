@@ -5,6 +5,12 @@ import Agent from './components/Agent'
 import GameOverScreen from './components/GameOverScreen'
 import ScoreBoard from './components/ScoreBoard'
 import Collectible from './components/collectible'
+import StartScreen from './components/StartScreen'
+import level1 from './assets/LevelData/level1.json'
+import level2 from './assets/LevelData/level2.json'
+import level3 from './assets/LevelData/level3.json'
+import level4 from './assets/LevelData/level4.json'
+import level5 from './assets/LevelData/level5.json'
 
 /// actually i think the structure is going to be a map container that holds the tiles,
 /// and similarly an entity container that holds player tiles, enemies objects and importantly blank tiles.
@@ -13,66 +19,26 @@ import Collectible from './components/collectible'
 
 
 export default function App() {
-  let tileMap = 
-  [   [1,0,0,0,0,0],
-      [0,0,1,0,1,0],
-      [0,1,1,0,1,0],
-      [0,0,0,0,0,0],
-      [1,1,0,1,1,0],
-      [0,0,0,1,0,0],
-  ]
-
+  const levelList = [level1,level2,level3,level4,level5]
+  const [level,setLevel] = useState (0)
+  const [attempts,setAttempts] = useState(0) // we use this so we can trigger the level use effect if we want to reload the same level
+  const [tileMap,setTileMap] = useState(structuredClone(levelList[level].tileMap))
+  console.log(tileMap)
   //const [turn,setTurn] = useState()
   //const animationSpeed = 250
-  const enemyRandomness = 0.15
-const [score,setScore] = useState(0)
+  const enemyRandomness = 0.15 // proabability enemy cat will pick a random option despite continuing motion being an option.
+const [score,setScore] = useState(0) /// currently doesnt work... i think i need to use a callback
+const [isGameStarted,setIsGameStarted] = useState(false)
 
-  const [entityDict,setentityDict] = useState({
-    "playerCat": {
-      
-      "type": "player",
-      "pos" : {"x" : 1, "y" : 0 },
-      "posInitial" : {"x" : 1, "y" : 0 },
-      "previousPos":{"x" : 1, "y" : 0 },
-      "possibleMoves": [],
-      "alive" : true
-    },
-    "cat1": {
-      "type": "enemy",
-      "pos" : {"x": 2, "y":3},
-      "posInitial" : {"x" : 2, "y" : 3 },
-      "previousPos": {"x": 2, "y":3},
-      "possibleMoves": [],
-      "alive" : true
-    } ,
-    "cat2": {
-      "type": "enemy",
-      "pos" : {"x": 4, "y":1},
-      "posInitial" : {"x" : 4, "y" : 1 },
-      "previousPos": {"x": 4, "y":1},
-      "possibleMoves": [],
-      "alive" : true
-    },
-    "fish1":{
-      "type": "collectible",
-      "pos" : {"x": 5, "y":0},
-      "alive" : true,
-      "value" : 100
-    },
-    "fish2":{
-      "type": "collectible",
-      "pos" : {"x": 4, "y":5},
-      "alive" : true,
-      "value" : 100
-    },
-    "fish3":{
-      "type": "collectible",
-      "pos" : {"x": 0, "y":5},
-      "alive" : true,
-      "value" : 100
-    }
-    
-  })
+  const [entityDict,setentityDict] = useState(structuredClone(levelList[level].entitiesDict))
+
+  useEffect (() => { // use effect to load level this feels inelegant but should work when player hit next level button on game over screen.
+    setTileMap(structuredClone(levelList[level].tileMap))
+    let tempEntityDict = structuredClone(levelList[level].entitiesDict)
+    tempEntityDict = findEntitiesPossibleMoves(tempEntityDict)
+    setentityDict(tempEntityDict)
+  },[level,attempts])
+
 function checkIfEntityTouching(playerPos,tempEntityDict){
   let newscore = score
   for(let key in tempEntityDict)
@@ -115,13 +81,7 @@ function selectMoveForAi(enemy){
   else if (enemy.previousPos.y - enemy.pos.y <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y + 1}) ){ return({"x" : enemy.pos.x,"y" : enemy.pos.y + 1})}
   else{return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
   }
-
-function playerTakesTurn(nextPlayerPos){  
-  
-  let tempEntityDict = structuredClone(entityDict)
-  tempEntityDict = checkIfEntityTouching(nextPlayerPos,tempEntityDict)
-  tempEntityDict.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
-  
+function findEntitiesPossibleMoves(tempEntityDict){
   for( let key in tempEntityDict){ // calculate moves for all entities for their new positions
     tempEntityDict[key].possibleMoves = findPossibleMoves(tempEntityDict[key].pos)
     if (tempEntityDict[key].type == "enemy"){ // if its an enemy we store its previous location and then make its move to one of its options
@@ -129,6 +89,16 @@ function playerTakesTurn(nextPlayerPos){
       tempEntityDict[key].pos = selectMoveForAi(tempEntityDict[key])
       tempEntityDict[key].previousPos = oldPos}
   }
+  return tempEntityDict
+}
+
+function playerTakesTurn(nextPlayerPos){  
+  
+  let tempEntityDict = structuredClone(entityDict)
+  tempEntityDict = checkIfEntityTouching(nextPlayerPos,tempEntityDict)
+  tempEntityDict.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
+  tempEntityDict = findEntitiesPossibleMoves(tempEntityDict)
+ 
 ////////////here the Ai needs to pick a new position of the possible
   tempEntityDict = checkIfEntityTouching(nextPlayerPos, tempEntityDict) //  called twice to handle us moving into them or arriving at the same tile as them
   setentityDict(tempEntityDict)
@@ -143,15 +113,19 @@ let agentList = Object.values(entityDict).filter((entity) =>{return entity.type 
 console.log(agentList, " = agent list")
   return (
     <>
-    <ScoreBoard score = {score}/>
-    <div className='w-3/4 aspect-square md:w-2/5 m-auto relative mt-5 border-black border-8'>
-    <MapContainerCanvas tileMap={tileMap} validMoves = {entityDict.playerCat.possibleMoves} turnOver={playerTakesTurn} />
-    {/*converting the values of our entityDict dict to a list so we can map it to generate the player / enemy agents. */}
     
-    {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
-    {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
-    {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"}/> :<></>}
-    {collectibleList.length < 1 ? <GameOverScreen variant = {"win"}/> :<></>}
+    <div className='w-3/4 aspect-square md:w-2/5 m-auto relative mt-5 border-black border-8'>
+    
+    {!isGameStarted ? (<StartScreen startGame = {()=>setIsGameStarted(true)} />) :(<>
+      <ScoreBoard score = {9-attempts}/>
+      <MapContainerCanvas tileMap={tileMap} validMoves = {entityDict.playerCat.possibleMoves} turnOver={playerTakesTurn} />
+      {/*converting the values of our entityDict dict to a list so we can map it to generate the player / enemy agents. */}
+      
+      {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
+      {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
+      {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"} buttonFunction={() =>{setAttempts(attempts+1)}} level = {level}/> :<></>}
+      {collectibleList.length < 1 ? <GameOverScreen variant = {"win"} buttonFunction={() =>{setLevel(level+1)}} level = {level}/> :<></>}
+      </> )}
     </div>
     </>
   )
