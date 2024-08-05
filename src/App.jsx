@@ -11,6 +11,9 @@ import level2 from './assets/LevelData/level2.json'
 import level3 from './assets/LevelData/level3.json'
 import level4 from './assets/LevelData/level4.json'
 import level5 from './assets/LevelData/level5.json'
+import TextContainer from './components/TextContainer'
+import Title from './components/Title'
+import cat from "./assets/cat.png"
 
 /// actually i think the structure is going to be a map container that holds the tiles,
 /// and similarly an entity container that holds player tiles, enemies objects and importantly blank tiles.
@@ -112,9 +115,9 @@ let collectibleList = Object.values(entityDict).filter((entity) =>{return entity
 let agentList = Object.values(entityDict).filter((entity) =>{return entity.type == "enemy" || entity.type == "player" })
 console.log(agentList, " = agent list")
   return (
-    <>
+    <div className='flex flex-row flex-wrap m-5  justify-center  gap-5'>
     
-    <div className='w-3/4 aspect-square md:w-2/5 m-auto relative mt-5 border-black border-8'>
+    <div className='w-3/4 aspect-square md:w-2/5  relative border-black border-8'>
     
     {!isGameStarted ? (<StartScreen startGame = {()=>setIsGameStarted(true)} />) :(<>
       <ScoreBoard score = {9-attempts}/>
@@ -127,6 +130,8 @@ console.log(agentList, " = agent list")
       {collectibleList.length < 1 ? <GameOverScreen variant = {"win"} buttonFunction={() =>{setLevel(level+1)}} level = {level}/> :<></>}
       </> )}
     </div>
-    </>
+    <TextContainer><Title content={"Instructions"}/> <a className='m-2'>You are a grey cat and it has been minutes since you last ate. Navigate the map by clicking on the highlighted tiles. Collect fish to quiet your endless hunger and avoid being caught by the other cats.</a> <img src = {cat} className='w-full m-1 pixelated' /></TextContainer>
+
+    </div>
   )
 }
