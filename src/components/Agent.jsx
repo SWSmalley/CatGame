@@ -4,7 +4,6 @@ import catSpriteEnemy from "../assets/cat2.png"
 
 export default function Agent({variant,posInitial,pos,className}) {
 
-
   const variants = {
     "player" : {
       "sprite" : catSprite,

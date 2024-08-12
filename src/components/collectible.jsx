@@ -5,8 +5,7 @@ export default function ({variant,posInitial,className}) {
     console.log(posInitial)
     let variants = {
         "fish" : {
-            "sprite" : fish,
-            //"movementTransition" : "transform 0.2s ease-in-out"
+            "sprite" : fish, /// might have others we want to add down the line so...
           }
         }
         

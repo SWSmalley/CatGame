@@ -22,18 +22,15 @@ import cat from "./assets/cat.png"
 
 
 export default function App() {
-  const levelList = [level1,level2,level3,level4,level5]
-  const [level,setLevel] = useState (0)
+  const levelList = [level1,level2,level3,level4,level5] // list of all level file data
+  const [level,setLevel] = useState (0) // what is the current level
   const [attempts,setAttempts] = useState(0) // we use this so we can trigger the level use effect if we want to reload the same level
   const [tileMap,setTileMap] = useState(structuredClone(levelList[level].tileMap))
-  console.log(tileMap)
-  //const [turn,setTurn] = useState()
-  //const animationSpeed = 250
   const enemyRandomness = 0.15 // proabability enemy cat will pick a random option despite continuing motion being an option.
-const [score,setScore] = useState(0) /// currently doesnt work... i think i need to use a callback
-const [isGameStarted,setIsGameStarted] = useState(false)
+  const [score,setScore] = useState(0) /// currently doesnt work / not used properly... i think i need to use a callback
+  const [isGameStarted,setIsGameStarted] = useState(false) // on true we dont return the main menu and return the game instead.
 
-  const [entityDict,setentityDict] = useState(structuredClone(levelList[level].entitiesDict))
+  const [entityDict,setentityDict] = useState(structuredClone(levelList[level].entitiesDict)) //copy the entity dict from the current level data 
 
   useEffect (() => { // use effect to load level this feels inelegant but should work when player hit next level button on game over screen.
     setTileMap(structuredClone(levelList[level].tileMap))
@@ -42,6 +39,7 @@ const [isGameStarted,setIsGameStarted] = useState(false)
     setentityDict(tempEntityDict)
   },[level,attempts])
 
+  ///checks if enemies / players are overlapping or if player / collectibles are overlapping
 function checkIfEntityTouching(playerPos,tempEntityDict){
   let newscore = score
   for(let key in tempEntityDict)
@@ -53,6 +51,7 @@ function checkIfEntityTouching(playerPos,tempEntityDict){
     setScore(newscore) // update here incase for some reason we have multiple point values earned to save on rerenders.
     return(tempEntityDict)
   }
+  // checks the possible moves for a given entitty on the current tilemap
 function findPossibleMoves(entityPos){
   let neighbours = []
   if(entityPos["x"]-1 >= 0){// is there a tile to the left 
@@ -69,14 +68,14 @@ function findPossibleMoves(entityPos){
   }
   return (neighbours.filter((tileCoords)=>{return(tileMap[tileCoords.y][tileCoords.x]<1)}))// checks if the tilemap value is < 1 and therefore navigable
 }
+// called as part of selectmoveforAI to see if its desired move (based on previous move or other factors that may be implemented) is an option in ints possible moves.
 function checkIfPossible(possibleMoves,movementToCheck){
   for(let move of possibleMoves){ if(move.x == movementToCheck.x && move.y == movementToCheck.y){return true}}
 }
-
+//decision behaviour that picks a move out of the possible moves for an AI.
 function selectMoveForAi(enemy){
   ///checks if the cat is going to behave erratically and pick a random direction
   if(Math.random()<enemyRandomness){return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
-  // this is a very ugly way but i cant think of something more elegant....
   /// we check which direction the enemy moved last AND can it be continued.. if so do it. if not go random.
   if (enemy.previousPos.x - enemy.pos.x >0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x - 1,"y" : enemy.pos.y}) ){ return({"x" : enemy.pos.x - 1,"y" : enemy.pos.y})}
   else if (enemy.previousPos.x - enemy.pos.x <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x + 1,"y" : enemy.pos.y}) ){ return({"x" : enemy.pos.x + 1,"y" : enemy.pos.y})}
@@ -84,6 +83,7 @@ function selectMoveForAi(enemy){
   else if (enemy.previousPos.y - enemy.pos.y <0 && checkIfPossible(enemy.possibleMoves,{"x" : enemy.pos.x,"y" : enemy.pos.y + 1}) ){ return({"x" : enemy.pos.x,"y" : enemy.pos.y + 1})}
   else{return(enemy.possibleMoves[Math.floor(Math.random()*enemy.possibleMoves.length)])}
   }
+  //calls find possible moves for enemys / players in the entity dict and makes the enemys pick one with selectmoveforai
 function findEntitiesPossibleMoves(tempEntityDict){
   for( let key in tempEntityDict){ // calculate moves for all entities for their new positions
     tempEntityDict[key].possibleMoves = findPossibleMoves(tempEntityDict[key].pos)
@@ -94,26 +94,28 @@ function findEntitiesPossibleMoves(tempEntityDict){
   }
   return tempEntityDict
 }
-
+//called when a player picks a move.
 function playerTakesTurn(nextPlayerPos){  
   
   let tempEntityDict = structuredClone(entityDict)
-  tempEntityDict = checkIfEntityTouching(nextPlayerPos,tempEntityDict)
+  tempEntityDict = checkIfEntityTouching(nextPlayerPos,tempEntityDict) // are we moving into an occupied space
   tempEntityDict.playerCat.pos = nextPlayerPos // updating the temp data with the new player position they picked
   tempEntityDict = findEntitiesPossibleMoves(tempEntityDict)
  
 ////////////here the Ai needs to pick a new position of the possible
-  tempEntityDict = checkIfEntityTouching(nextPlayerPos, tempEntityDict) //  called twice to handle us moving into them or arriving at the same tile as them
+  tempEntityDict = checkIfEntityTouching(nextPlayerPos, tempEntityDict) //  called twice to handle us moving into them or arriving at the same tile as them simultaneously
   setentityDict(tempEntityDict)
 }
 
 useEffect(() =>{  playerTakesTurn(entityDict.playerCat.posInitial)} ,[]) //runs the turn script once at run time.
   
-
-/// enemy cats have a startingPos, CurrentPos a way of recording the direction they continue in, maybe a valid moves list.
+/// this section 
 let collectibleList = Object.values(entityDict).filter((entity) =>{return entity.type == "collectible" && entity.alive == true})
 let agentList = Object.values(entityDict).filter((entity) =>{return entity.type == "enemy" || entity.type == "player" })
 console.log(agentList, " = agent list")
+
+
+
   return (
     <div className='flex flex-row flex-wrap m-5  justify-center  gap-5'>
     
@@ -126,11 +128,11 @@ console.log(agentList, " = agent list")
       
       {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
       {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
-      {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"} buttonFunction={() =>{setAttempts(attempts+1)}} level = {level}/> :<></>}
-      {collectibleList.length < 1 ? <GameOverScreen variant = {"win"} buttonFunction={() =>{setLevel(level+1)}} level = {level}/> :<></>}
+      {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"} buttonFunction={() =>{setAttempts(attempts+1)}} level = {level} returnToMainMenu={() => {setIsGameStarted(false)}}/> :<></>}
+      {collectibleList.length < 1 ? <GameOverScreen variant = {"win"} buttonFunction={() =>{setLevel(level+1)}} level = {level} returnToMainMenu={() => {setIsGameStarted(false)}}/> :<></>}
       </> )}
     </div>
-    <TextContainer><Title content={"Instructions"}/> <a className='m-2'>You are a grey cat and it has been minutes since you last ate. Navigate the map by clicking on the highlighted tiles. Collect fish to quiet your endless hunger and avoid being caught by the other cats.</a> <img src = {cat} className='w-full m-1 pixelated' /></TextContainer>
+    <TextContainer><Title content={"Instructions"}/> <a className='m-2'>You are a grey cat and it has been minutes since you last ate. Navigate the map by clicking on the highlighted tiles. Collect fish to quiet your endless hunger and avoid being caught by the other cats.</a> <img src = {cat} className='w-0 lg:w-1/2 m-1 pixelated' /></TextContainer>
 
     </div>
   )
