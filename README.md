@@ -1,4 +1,4 @@
-#Cat Game
+# Cat Game
 
 A simple browser game built to test my understanding of react hooks, tailwind CSS and JS.
 
