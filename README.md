@@ -2,6 +2,8 @@
 
 A simple browser game built to test my understanding of react hooks, tailwind CSS and JS.
 
+Play it [here](https://swsmalley.github.io/CatGame/)
+
 Click the flashing squares to navigate round the map! collect the blue fish without being caught by the tabby cats to clear each level.
 
 ####To Do####
