@@ -15,11 +15,6 @@ import TextContainer from './components/TextContainer'
 import Title from './components/Title'
 import cat from "./assets/cat.png"
 
-/// actually i think the structure is going to be a map container that holds the tiles,
-/// and similarly an entity container that holds player tiles, enemies objects and importantly blank tiles.
-/// this would prevent animation of objects moving... but thats kinda rogue style?? nice.
-/// this would allow us to avoid offset bugs moving sprites around.
-
 
 export default function App() {
   const levelList = [level1,level2,level3,level4,level5] // list of all level file data
@@ -124,8 +119,7 @@ console.log(agentList, " = agent list")
     {!isGameStarted ? (<StartScreen startGame = {()=>setIsGameStarted(true)} />) :(<>
       <ScoreBoard score = {9-attempts}/>
       <MapContainerCanvas tileMap={tileMap} validMoves = {entityDict.playerCat.possibleMoves} turnOver={playerTakesTurn} />
-      {/*converting the values of our entityDict dict to a list so we can map it to generate the player / enemy agents. */}
-      
+            
       {agentList.map((agent,index) =>{return(<Agent key = {index} pos = {agent.pos} posInitial = {agent.posInitial} variant = {agent.type} />)} )}
       {collectibleList.map((collectible,index) =>{return(<Collectible key = {index} posInitial = {collectible.pos} variant = {"fish"} />)} )}
       {!entityDict.playerCat.alive ? <GameOverScreen variant = {"lose"} buttonFunction={() =>{setAttempts(attempts+1)}} level = {level} returnToMainMenu={() => {setIsGameStarted(false)}}/> :<></>}
